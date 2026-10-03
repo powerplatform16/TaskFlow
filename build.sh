@@ -13,3 +13,6 @@ python manage.py migrate
 
 # Populate initial sample demo data
 python manage.py seed_data
+
+#Create superuser
+python manage.py createsuperuser --noinput || true
