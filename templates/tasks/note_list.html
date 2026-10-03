@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Scratchpad Notes | TaskFlow Hub{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Scratchpad & Notes</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Quick memos, checklists, snippets, and meeting thoughts</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'tasks:note_create' %}" class="inline-flex items-center px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md shadow-amber-500/20 transition">
+                <i class="fa-solid fa-plus mr-1.5"></i> New Note
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+        <form method="GET" action="{% url 'tasks:note_list' %}" class="relative">
+            <input 
+                type="text" 
+                name="q" 
+                placeholder="Search notes by keyword or content..." 
+                value="{{ current_q }}"
+                class="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs"
+            >
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+        </form>
+    </div>
+
+    <!-- Notes Grid -->
+    {% if notes %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for note in notes %}
+        <div class="rounded-2xl border p-5 shadow-sm transition hover:shadow-md flex flex-col justify-between relative
+            {% if note.theme == 'yellow' %}bg-amber-50/70 border-amber-200 text-amber-950 dark:bg-amber-950/20 dark:border-amber-800/60 dark:text-amber-100
+            {% elif note.theme == 'blue' %}bg-blue-50/70 border-blue-200 text-blue-950 dark:bg-blue-950/20 dark:border-blue-800/60 dark:text-blue-100
+            {% elif note.theme == 'emerald' %}bg-emerald-50/70 border-emerald-200 text-emerald-950 dark:bg-emerald-950/20 dark:border-emerald-800/60 dark:text-emerald-100
+            {% elif note.theme == 'purple' %}bg-purple-50/70 border-purple-200 text-purple-950 dark:bg-purple-950/20 dark:border-purple-800/60 dark:text-purple-100
+            {% elif note.theme == 'rose' %}bg-rose-50/70 border-rose-200 text-rose-950 dark:bg-rose-950/20 dark:border-rose-800/60 dark:text-rose-100
+            {% else %}bg-slate-50/70 border-slate-200 text-slate-950 dark:bg-slate-800/40 dark:border-slate-700 dark:text-slate-100{% endif %}">
+            
+            <div>
+                <!-- Top Row: Pin and Actions -->
+                <div class="flex items-start justify-between gap-2 mb-3">
+                    <div class="flex items-center space-x-2">
+                        <form action="{% url 'tasks:note_toggle_pin' note.id %}" method="POST" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="p-1 rounded hover:bg-black/5 dark:hover:bg-white/10 transition" title="{% if note.is_pinned %}Unpin Note{% else %}Pin Note{% endif %}">
+                                <i class="fa-solid fa-thumbtack text-xs {% if note.is_pinned %}text-amber-600 dark:text-amber-400 rotate-45{% else %}text-slate-400 opacity-60{% endif %}"></i>
+                            </button>
+                        </form>
+                        {% if note.category %}
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10">
+                            {{ note.category.name }}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center space-x-1">
+                        <a href="{% url 'tasks:note_update' note.id %}" class="p-1 rounded text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-black/5 dark:hover:bg-white/10 transition" title="Edit">
+                            <i class="fa-regular fa-pen-to-square text-xs"></i>
+                        </a>
+                        <a href="{% url 'tasks:note_delete' note.id %}" class="p-1 rounded text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-black/5 dark:hover:bg-white/10 transition" title="Delete">
+                            <i class="fa-regular fa-trash-can text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <h3 class="font-bold text-base tracking-tight mb-2">{{ note.title }}</h3>
+                <div class="text-xs opacity-90 leading-relaxed whitespace-pre-line">
+                    {{ note.content }}
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px] opacity-70">
+                <span>Updated {{ note.updated_at|timesince }} ago</span>
+                {% if note.is_pinned %}
+                <span class="font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                    <i class="fa-solid fa-thumbtack text-[9px]"></i> Pinned
+                </span>
+                {% endif %}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="py-16 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+        <div class="inline-flex h-16 w-16 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-500 items-center justify-center text-2xl mb-3">
+            <i class="fa-regular fa-note-sticky"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800 dark:text-slate-200">No notes found</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Jot down quick ideas, meeting memos, or checklists.</p>
+        <a href="{% url 'tasks:note_create' %}" class="mt-4 inline-flex items-center px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold shadow-sm">
+            <i class="fa-solid fa-plus mr-1"></i> Add Note
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+# Python & Django
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.sqlite3
+db.sqlite3-journal
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Static collection
+/staticfiles/
+
+# IDEs & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
